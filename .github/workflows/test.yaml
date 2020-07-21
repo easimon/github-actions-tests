@@ -1,0 +1,26 @@
+name: Test
+on: push
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+#      - name: Check out repository
+#        uses: actions/checkout@master
+
+      - name: Environment report
+        run: |
+          uname -a
+          cat /etc/fstab
+          sudo fdisk -l
+          sudo losetup -a
+          df -h
+          cat /proc/cpuinfo
+          cat /proc/meminfo
+          free
+          ls -al /mnt
+          pwd
+          whoami
+          ls -alR $HOME
+          du -sh $HOME
