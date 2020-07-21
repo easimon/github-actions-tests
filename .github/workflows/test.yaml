@@ -6,21 +6,62 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
+      - name: Modify workspace
+        run: |
+          export TMP_DEV=$(df --output=source  /mnt/ | tail -1)
+          export FREE_RESERVE_KB=$(expr 512 \* 1024)
+          export ROOT_FREE_KB=$(df --block-size=1024 --output=avail / | tail -1)
+          export ROOT_LVM_SIZE_KB=$(expr $ROOT_FREE_KB - $FREE_RESERVE_KB)
+
+          sudo swapoff -a
+          sudo umount /mnt
+          df /
+          sudo dd if=/dev/zero of=/pv bs=1024 count=0 seek=$ROOT_LVM_SIZE_KB
+          df /
+          ls -hl /pv
+          export ROOT_LOOP_DEV=$(sudo losetup --find --show /pv)
+
+          sudo pvcreate -f $TMP_DEV $ROOT_LOOP_DEV
+          sudo vgcreate buildvg $TMP_DEV $ROOT_LOOP_DEV
+          sudo lvcreate -L2G -n swap buildvg
+          sudo mkswap /dev/mapper/buildvg-swap
+          sudo swapon /dev/mapper/buildvg-swap
+          sudo lvcreate -l100%FREE -n buildlv buildvg
+
+          sudo mkfs.ext4 /dev/mapper/buildvg-buildlv
+          sudo mount /dev/mapper/buildvg-buildlv /mnt
+
 #      - name: Check out repository
 #        uses: actions/checkout@master
 
       - name: Environment report
         run: |
+          echo "System:"
           uname -a
-          cat /etc/fstab
-          sudo fdisk -l
-          sudo losetup -a
-          df -h
           cat /proc/cpuinfo
           cat /proc/meminfo
+          echo
+
+          echo "Memory and swap:"
           free
-          ls -al /mnt
+          swapon --show
+
+          echo "Storage:"
+          cat /etc/fstab
+          echo
+          sudo fdisk -l
+          echo
+          sudo losetup -a
+          echo
+          df -h
+          echo
+
+          echo "LVM"
+          sudo lvmdiskscan
+          sudo vgdisplay
+          sudo pvdisplay
+          sudo lvdisplay
+
+          echo "User and environment:"
           pwd
           whoami
-          ls -alR $HOME
-          du -sh $HOME
