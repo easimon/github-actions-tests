@@ -12,13 +12,15 @@ jobs:
           export FREE_RESERVE_KB=$(expr 512 \* 1024)
           export ROOT_FREE_KB=$(df --block-size=1024 --output=avail / | tail -1)
           export ROOT_LVM_SIZE_KB=$(expr $ROOT_FREE_KB - $FREE_RESERVE_KB)
+          export ROOT_LVM_SIZE_BYTES=$(expr $ROOT_LVM_SIZE_KB \* 1024)
 
           sudo swapoff -a
           sudo umount /mnt
-          df /
-          sudo dd if=/dev/zero of=/pv bs=1024 count=0 seek=$ROOT_LVM_SIZE_KB
-          df /
-          ls -hl /pv
+          sudo touch /pv
+          df -h /
+          sudo fallocate -z -l $ROOT_LVM_SIZE_BYTES /pv
+          df -h /
+          du -sh /pv
           export ROOT_LOOP_DEV=$(sudo losetup --find --show /pv)
 
           sudo pvcreate -f $TMP_DEV $ROOT_LOOP_DEV
@@ -33,7 +35,6 @@ jobs:
 
 #      - name: Check out repository
 #        uses: actions/checkout@master
-
       - name: Environment report
         run: |
           echo "System:"
@@ -61,6 +62,13 @@ jobs:
           sudo vgdisplay
           sudo pvdisplay
           sudo lvdisplay
+
+          echo "Docker"
+          docker version
+          docker image ls -a
+          docker container ls -a
+          docker volume ls
+          sudo du -sh /var/lib/docker
 
           echo "User and environment:"
           pwd
