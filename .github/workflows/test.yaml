@@ -1,0 +1,17 @@
+name: Test
+on: push
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Environment report
+        run: |
+          echo "Working directory: $(pwd)"
+          echo
+          echo "####"
+          echo "#### /usr/local/lib"
+          echo "####"
+          sudo du -sh /usr/local/lib/* || true
+          echo
