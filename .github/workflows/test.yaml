@@ -1,17 +1,16 @@
-name: Test
+name: Test Maximize available disk space for build
 on: push
 
 jobs:
   test:
-    name: Test
+    name: Maximize available disk space for build
     runs-on: ubuntu-latest
     steps:
-      - name: Environment report
-        run: |
-          echo "Working directory: $(pwd)"
-          echo
-          echo "####"
-          echo "#### /usr/local/lib"
-          echo "####"
-          sudo du -sh /usr/local/lib/* || true
-          echo
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 512
+          swap-size-mb: 512
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
