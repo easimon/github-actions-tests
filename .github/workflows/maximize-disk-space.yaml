@@ -6,63 +6,14 @@ jobs:
     name: Maximize available disk space for build
     runs-on: ubuntu-latest
     steps:
-      - name: Environment report before
-        run: |
-          echo "Memory and swap:"
-          free
-          swapon --show
-          echo
-
-          echo "Storage:"
-          cat /etc/fstab
-          df -h
-          echo
-
-      - name: Modify workspace
-        env:
-          ROOT_RESERVE_MB: 512   # reserve on root fs (for system services (e.g. docker!) and other actions that do not run on the build mount)
-          SWAP_SIZE: 2G          # argument to lvcreate -L
-          PV_LOOP_FILE: /pv.img  # where to put the loop pv image
-          BUILD_MOUNT_PATH: /mnt # where to mount the resulting lv
-        run: |
-
-          export TMP_DEV=$(df --output=source  /mnt/ | tail -1)
-          export ROOT_RESERVE_KB=$(expr ${ROOT_RESERVE_MB} \* 1024)
-          export ROOT_FREE_KB=$(df --block-size=1024 --output=avail / | tail -1)
-          export ROOT_LVM_SIZE_KB=$(expr $ROOT_FREE_KB - $ROOT_RESERVE_KB)
-          export ROOT_LVM_SIZE_BYTES=$(expr $ROOT_LVM_SIZE_KB \* 1024)
-          export VG_NAME=buildvg
-
-          # unmount swap and temp disk
-          sudo swapoff -a
-          sudo umount /mnt
-
-          # create loop pv image on root fs
-          sudo fallocate -l "${ROOT_LVM_SIZE_BYTES}" "${PV_LOOP_FILE}"
-          sudo dd if=/dev/zero of="${PV_LOOP_FILE}"
-          export ROOT_LOOP_DEV=$(sudo losetup --find --show "${PV_LOOP_FILE}")
-          sudo pvcreate -f "${ROOT_LOOP_DEV}"
-
-          # create pv on temp disk
-          sudo pvcreate -f "${TMP_DEV}"
-
-          # create volume group from these pvs
-          sudo vgcreate "${VG_NAME}" "${TMP_DEV}" "${ROOT_LOOP_DEV}"
-
-          # create and activate swap
-          sudo lvcreate -L "${SWAP_SIZE}" -n swap "${VG_NAME}"
-          sudo mkswap "/dev/mapper/${VG_NAME}-swap"
-          sudo swapon "/dev/mapper/${VG_NAME}-swap"
-
-          # create and mount build volume
-          sudo lvcreate -l 100%FREE -n buildlv "${VG_NAME}"
-          sudo mkfs.ext4 "/dev/mapper/${VG_NAME}-buildlv"
-          sudo mount "/dev/mapper/${VG_NAME}-buildlv" "${BUILD_MOUNT_PATH}"
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
 
       - name: Environment report after
         run: |
           echo "Memory and swap:"
           free
+          echo
           swapon --show
           echo
 
@@ -70,3 +21,5 @@ jobs:
           cat /etc/fstab
           df -h
           echo
+          ls -hl /pv.img
+          du -sh /pv.img
