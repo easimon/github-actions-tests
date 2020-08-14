@@ -6,20 +6,17 @@ jobs:
     name: Maximize available disk space for build
     runs-on: ubuntu-latest
     steps:
+      - name: Environment report before
+        run: |
+          echo "Working directory: $(pwd)"
+          echo
+          ls -al
+
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
 
       - name: Environment report after
         run: |
-          echo "Memory and swap:"
-          free
+          echo "Working directory: $(pwd)"
           echo
-          swapon --show
-          echo
-
-          echo "Storage:"
-          cat /etc/fstab
-          df -h
-          echo
-          ls -hl /pv.img
-          du -sh /pv.img
+          ls -al
