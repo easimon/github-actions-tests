@@ -9,7 +9,7 @@ jobs:
         run: |
           echo "Working directory: $(pwd)"
           echo
-          ls -al
+          ls -al /mnt
       - name: Maximize build space
         uses: easimon/maximize-build-space@fix/ubuntu-20.04
         with:
