@@ -3,16 +3,15 @@ on: push
 
 jobs:
   test:
-    name: Test Stuff
-    runs-on: ubuntu-latest
-    steps:
-    - shell: bash
-      run: |
-        RESOURCE=`whoami`
-        echo $RESOURCE
-        echo $RESOURCE > test.txt
-        echo "From var"
-        cat test.txt
-        whoami > another-file.txt
-        echo "From command"
-        cat another-file.txt
+     runs-on: ubuntu-20.04
+     steps:
+      - name: Environment report before
+        run: |
+          echo "Working directory: $(pwd)"
+          echo
+          ls -al
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 512
+          swap-size-mb: 512
