@@ -11,7 +11,7 @@ jobs:
           echo
           ls -al
       - name: Maximize build space
-        uses: easimon/maximize-build-space@master
+        uses: easimon/maximize-build-space@fix/ubuntu-20.04
         with:
           root-reserve-mb: 512
           swap-size-mb: 512
