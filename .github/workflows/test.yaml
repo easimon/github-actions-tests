@@ -8,11 +8,4 @@ jobs:
     steps:
     - shell: bash
       run: |
-        RESOURCE=`whoami`
-        echo $RESOURCE
-        echo $RESOURCE > test.txt
-        echo "From var"
-        cat test.txt
-        whoami > another-file.txt
-        echo "From command"
-        cat another-file.txt
+        ls -alR
