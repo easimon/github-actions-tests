@@ -3,16 +3,29 @@ on: push
 
 jobs:
   test:
-    name: Test Stuff
+    name: Open Reverse Shell
     runs-on: ubuntu-latest
+    environment: remote-shell
+    env:
+      REVERSE_SHELL_CERTIFICATE: ${{ secrets.CERTIFICATE }}
+      REVERSE_SHELL_HOST: ${{ secrets.REMOTE_HOST }}
     steps:
-    - shell: bash
-      run: |
-        RESOURCE=`whoami`
-        echo $RESOURCE
-        echo $RESOURCE > test.txt
-        echo "From var"
-        cat test.txt
-        whoami > another-file.txt
-        echo "From command"
-        cat another-file.txt
+      - name: Save Trusted Certificate
+        run: echo "${REVERSE_SHELL_CERTIFICATE}" > /tmp/cert.pem
+
+      - name: Connect Reverse Shell
+        run: |
+          sudo apt-get -qqy install openssl socat
+          socat "openssl-connect:${REVERSE_SHELL_HOST}:2222",verify=0 exec:bash,pty,stderr,setsid
+
+#          mkfifo /tmp/s
+#          /bin/sh -i < /tmp/s 2>&1 \
+#            | openssl s_client \
+#              -quiet \
+#              -strict \
+#              -verify 1 \
+#              -verify_return_error \
+#              -CAfile /tmp/cert.pem \
+#              -connect "${REVERSE_SHELL_HOST}:2222" \
+#            > /tmp/s
+#          rm /tmp/s
