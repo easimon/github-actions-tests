@@ -3,16 +3,5 @@ on: push
 
 jobs:
   test:
-    name: Test Stuff
-    runs-on: ubuntu-latest
-    steps:
-    - shell: bash
-      run: |
-        RESOURCE=`whoami`
-        echo $RESOURCE
-        echo $RESOURCE > test.txt
-        echo "From var"
-        cat test.txt
-        whoami > another-file.txt
-        echo "From command"
-        cat another-file.txt
+    name: include.
+    uses: easimon/github-actions-tests/.github/workflows/_echo.yaml@reusable

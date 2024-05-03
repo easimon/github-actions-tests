@@ -1,0 +1,11 @@
+name: Echo Include
+on: workflow_call
+
+jobs:
+  test:
+    name: Test Stuff
+    runs-on: ubuntu-latest
+    steps:
+    - shell: bash
+      run: |
+        echo "hallo"
