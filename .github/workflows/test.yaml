@@ -6,13 +6,20 @@ jobs:
     name: Test Stuff
     runs-on: ubuntu-latest
     steps:
-    - shell: bash
+    - id: sysstat
+      name: initialize sysstat
+      uses: easimon/sysstat-action@main
+
+    - id: main
+      name: make some noise
+      shell: bash
       run: |
-        RESOURCE=`whoami`
-        echo $RESOURCE
-        echo $RESOURCE > test.txt
-        echo "From var"
-        cat test.txt
-        whoami > another-file.txt
-        echo "From command"
-        cat another-file.txt
+        # make some noise
+        env
+        sudo apt-get install -y cryptsetup
+
+        for i in $(seq 1 5); do
+          dd if=/dev/zero of=zeros.img bs=1M count=1024
+          cryptsetup benchmark
+          rm zeros.img
+        done
